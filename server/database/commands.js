@@ -99,6 +99,9 @@ const createBoard = (userId, attributes) =>{
 const updateBoard = (id, attributes) =>
   updateRecord('boards', id, attributes)
 
+const createInvite = (attributes) =>
+  createRecord('invites', attributes)
+
 
 const deleteBoard = (boardId) =>
   Promise.all([
@@ -121,4 +124,5 @@ export default {
   createBoard,
   updateBoard,
   deleteBoard,
+  createInvite,
 }

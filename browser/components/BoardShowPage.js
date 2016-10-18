@@ -81,7 +81,7 @@ class BoardShowPage extends React.Component {
       <div className="BoardShowPage-Header">
         <h1>{board.name}</h1>
         <DeleteBoardButton boardId={board.id}/>
-        <InviteByEmailButton/>
+        <InviteByEmailButton boardId={board.id}/>
       </div>
       <div className="BoardShowPage-lists" ref="lists">
         {lists}

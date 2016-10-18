@@ -29,4 +29,3 @@ export default class DeleteBoardButton extends Component {
     </button>
   }
 }
-
