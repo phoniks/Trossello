@@ -65,6 +65,7 @@ export default class List extends Component {
     event.preventDefault()
     const cardId = event.dataTransfer.getData("text")
     const { list } = this.props
+    event.target.classList.remove('BoardShowPage-Card-dragPlaceholder')
     // move card
     $.ajax({
       method: "POST",
@@ -97,7 +98,7 @@ export default class List extends Component {
       newCardLink = <Link onClick={this.creatingCard} className="BoardShowPage-create-card-link" >Add a card...</Link>
     }
 
-    return <div ref="root" className="BoardShowPage-List" onDrop={this.onDrop} onDragOver={this.onDragOver}>
+    return <div ref="root" className="BoardShowPage-List dropzone" onDrop={this.onDrop} onDragOver={this.onDragOver}>
       <div className="BoardShowPage-ListHeader">
         {list.name}
         <DeleteListButton list={list} />
@@ -171,10 +172,14 @@ class NewCardForm extends Component {
 
 const Card = ({ card }) => {
   const dragStart = event => {
+    event.target.classList.add('BoardShowPage-Card-dragPlaceholder')
     event.dataTransfer.setData("text", card.id)
   }
+  const dragEnd = event => {
+    event.target.classList.remove('BoardShowPage-Card-dragPlaceholder')
+  }
 
-  return <div className="BoardShowPage-Card" draggable="true" onDragStart={dragStart} id={card.id}>
+  return <div className="BoardShowPage-Card" draggable="true" onDragStart={dragStart} onDragEnd={dragEnd}>
     <pre>{card.content}</pre>
     <DeleteCardButton card={card} />
   </div>
