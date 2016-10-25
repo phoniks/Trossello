@@ -144,6 +144,40 @@ describe('database.commands', () => {
 
     })
 
+    it('should insert the new card at the end of the card order', () => {
+      return queries.getBoardById(101)
+        .then(board => {
+          console.log(board);
+          let cards = board.cards
+            .filter(card => card.list_id === 40)
+            .sort( (a,b) => a.order - b.order)
+          expect(cards.length).to.eql(2)
+          expect(cards[0].content).to.eql('card1')
+          expect(cards[0].order).to.eql(0)
+          expect(cards[1].content).to.eql('Card2')
+          expect(cards[1].order).to.eql(1)
+        })
+        .then( () =>
+          commands.createCard({
+            list_id: 40,
+            content: 'another card',
+          })
+        )
+        .then( () => queries.getBoardById(101))
+        .then(board => {
+          let cards = board.cards
+            .filter(card => card.list_id === 40)
+            .sort( (a,b) => a.order - b.order)
+          expect(cards.length).to.eql(3)
+          expect(cards[0].content).to.eql('card1')
+          expect(cards[0].order).to.eql(0)
+          expect(cards[1].content).to.eql('Card2')
+          expect(cards[1].order).to.eql(1)
+          expect(cards[2].content).to.eql('another card')
+          expect(cards[2].order).to.eql(2)
+        })
+    })
+
   })
 
   describe('updateCard', () => {
@@ -171,6 +205,93 @@ describe('database.commands', () => {
             })
           })
         })
+      })
+    })
+  })
+
+  describe('reorderCard', () => {
+    withBoardsListsAndCardsInTheDatabase(() => {
+      it.only('should update card orders', () => {
+        return queries.getBoardById(101)
+          .then(board => {
+            let cards = board.cards
+              .filter(card => card.list_id === 40)
+              .sort( (a,b) => a.order - b.order)
+            expect(cards.length).to.eql(2)
+            expect(cards[0].content).to.eql('card1')
+            expect(cards[0].order).to.eql(0)
+            expect(cards[1].content).to.eql('Card2')
+            expect(cards[1].order).to.eql(1)
+          })
+          .then( () =>
+            commands.reorderCard({
+              list_id: 40,
+              card_id: 81,
+              order: 0,
+            })
+          )
+          .then( () => queries.getBoardById(101))
+          .then(board => {
+            let cards = board.cards
+              .filter(card => card.list_id === 40)
+              .sort( (a,b) => a.order - b.order)
+            expect(cards.length).to.eql(2)
+            expect(cards[0].content).to.eql('Card2')
+            expect(cards[0].order).to.eql(0)
+            expect(cards[1].content).to.eql('card1')
+            expect(cards[1].order).to.eql(1)
+          })
+          .then( () =>
+            commands.reorderCard({
+              list_id: 40,
+              card_id: 81,
+              order: 2,
+            })
+          )
+          .then( () => queries.getBoardById(101))
+          .then(board => {
+            let cards = board.cards
+            .filter(card => card.list_id === 40)
+            .sort( (a, b) => a.order - b.order)
+          expect(cards.length).to.eql(2)
+          expect(cards[0].content).to.eql('card1')
+          expect(cards[1].content).to.eql('Card2')
+          })
+          .then( ()=>
+            commands.createCard({
+              id: 1089,
+              list_id: 40,
+              content: 'new Test Card'
+            })
+          )
+          .then( ()=> queries.getBoardById(101))
+          .then(board => {
+            let cards = board.cards
+              .filter(card => card.list_id === 40)
+              .sort((a,b) => a.order - b.order)
+            expect(cards.length).to.eql(3)
+            expect(cards[0].content).to.eql('card1')
+            expect(cards[1].content).to.eql('Card2')
+            expect(cards[2].content).to.eql('new Test Card')
+          })
+          .then( ()=>
+            commands.reorderCard({
+              list_id: 40,
+              card_id: 1089,
+              order: 1
+            })
+          )
+          .then( ()=> queries.getBoardById(101))
+          .then(board => {
+            let cards = board.cards
+              .filter(card => card.list_id === 40)
+              .sort((a,b) => a.order - b.order)
+            console.log(cards);
+            expect(cards.length).to.eql(3)
+            expect(cards[1].content).to.eql('card1')
+            expect(cards[2].content).to.eql('Card2')
+            expect(cards[0].content).to.eql('new Test Card')
+          })
       })
     })
   })

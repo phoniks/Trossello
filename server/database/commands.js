@@ -101,7 +101,18 @@ const deleteList = (id) =>
 //
 
 const createCard = (attributes) => {
-  return createRecord('cards', attributes)
+  return knex
+    .table('cards')
+    .where({list_id: attributes.list_id})
+    .count()
+    .then( results => {
+      attributes.order = results[0].count
+      return knex
+        .table('cards')
+        .insert(attributes)
+        .returning('*')
+        .then(firstRecord)
+    })
 }
 
 const updateCard = (id, attributes) =>
@@ -115,6 +126,28 @@ const archiveCard = (id) =>
 
 const unarchiveCard = (id) =>
   unarchiveRecord('cards', id)
+
+const reorderCard = ({list_id, card_id, order}) => {
+  order = Number(order)
+  return knex
+    .table('cards')
+    .where({list_id})
+    .orderBy('order', 'asc')
+    .then(cards => {
+      cards.forEach(card => {
+        card.order = Number(card.order)
+        if (card.id === card_id){
+          card.order = Number(order)
+        }else if (card.order >= order) {
+          card.order += 1
+        }
+      })
+      const queries = cards.map(card =>
+        updateCard(card.id, {order: card.order})
+      )
+      return Promise.all(queries)
+    })
+}
 
 const archiveList = (id) =>
   Promise.all([
@@ -168,6 +201,7 @@ export default {
   createCard,
   updateCard,
   deleteCard,
+  reorderCard,
   createBoard,
   updateBoard,
   deleteBoard,
